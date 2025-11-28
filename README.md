@@ -53,4 +53,5 @@ Este proyecto usa `edge-tts` para acceder a las voces online de Microsoft.
 
 ## 📄 Licencia
 
-Proyecto de código abierto para uso personal y educativo.
+Este proyecto está bajo la licencia **Apache 2.0**. Consulta el archivo `LICENSE` para más detalles.
+
