@@ -348,9 +348,17 @@ def sintetizar_audio_fallback(texto: str, voz: str) -> tuple:
         raise RuntimeError(f'No se pudo sintetizar con ninguna voz disponible. Último error: {last_err}')
     raise RuntimeError('No se pudo sintetizar con voces disponibles')
 
+def limpiar_emojis(texto: str) -> str:
+    # Rango de emojis y símbolos pictográficos comunes
+    # Nota: Python re no soporta propiedades Unicode complejas sin módulos externos.
+    # Usamos rangos hex comunes para emojis.
+    return re.sub(r'[\U00010000-\U0010ffff]', '', texto)
+
 def limpiar_markdown(texto: str) -> str:
     # Primero limpiar tokens del modelo
     texto = limpiar_modelo_tokens(texto)
+    # Limpiar emojis
+    texto = limpiar_emojis(texto)
     # Eliminar encabezados Markdown (## Titulo)
     texto = re.sub(r'#+\s*', '', texto)
     # Eliminar negritas y cursivas (**texto**, *texto*)
