@@ -367,7 +367,7 @@ def tts():
         voces = obtener_voces_es()
         if not any(v.get('ShortName') == voz for v in voces):
             return Response("Voz no soportada. Prueba otra voz.", status=400)
-        data, usada = sintetizar_audio_fallback(texto[:1500], voz)
+        data, usada = sintetizar_audio_fallback(texto, voz)
         nombre = datetime.now().strftime("post_%Y%m%d_%H%M%S.mp3")
         headers = {"Content-Disposition": f"attachment; filename={nombre}", "X-Edge-Voice-Used": usada}
         return Response(data, mimetype='audio/mpeg', headers=headers)
