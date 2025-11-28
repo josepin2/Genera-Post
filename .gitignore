@@ -1,0 +1,7 @@
+venv/
+__pycache__/
+*.pyc
+*.mp3
+entrada_blog_*.txt
+post_*.mp3
+.DS_Store

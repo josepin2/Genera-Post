@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Posts</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <meta name="color-scheme" content="light dark">
+    <style>
+        :root { --bg-start: #0ea5ea; --bg-end: #3a86ff; --primary: #2563eb; --primary-alt: #38b6ff; --text: #0f172a; --muted: #64748b; --card-bg: rgba(255,255,255,0.92); --shadow-lg: rgba(31,38,135,0.18); --shadow-sm: rgba(79,140,255,0.08); --ring: #a1c4fd55; }
+        .dark { --bg-start: #0f172a; --bg-end: #1e293b; --text: #e5e7eb; --muted: #94a3b8; --card-bg: rgba(12,18,28,0.7); --shadow-lg: rgba(0,0,0,0.35); --shadow-sm: rgba(0,0,0,0.2); --ring: rgba(37,99,235,0.35); }
+        body { font-family: 'Montserrat', 'Roboto', Arial, sans-serif; background: radial-gradient(1200px 800px at 20% 20%, var(--bg-start), transparent), radial-gradient(1200px 800px at 80% 0%, var(--bg-end), transparent), linear-gradient(120deg, var(--bg-start) 0%, var(--bg-end) 100%); min-height: 100vh; margin: 0; padding: 72px 20px 40px 20px; display: flex; flex-direction: column; align-items: center; }
+        .topbar { position: fixed; top: 0; left: 0; right: 0; height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; background: rgba(255,255,255,0.35); backdrop-filter: blur(10px); box-shadow: 0 6px 24px var(--shadow-lg); }
+        .dark .topbar { background: rgba(16,23,35,0.35); }
+        .brand { display: flex; align-items: center; gap: 10px; color: var(--primary); font-weight: 800; letter-spacing: 0.5px; }
+        .toggle { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.06); background: rgba(255,255,255,0.6); color: var(--primary); cursor: pointer; }
+        .dark .toggle { background: rgba(16,23,35,0.6); border-color: rgba(255,255,255,0.06); color: #e5e7eb; }
+        .container { background: var(--card-bg); padding: 40px 32px 32px 32px; border-radius: 22px; box-shadow: 0 8px 32px 0 var(--shadow-lg), 0 1.5px 8px 0 var(--shadow-sm); max-width: 780px; width: 100%; animation: fadeIn 0.8s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .logo { display: flex; align-items: center; justify-content: center; margin-bottom: 4px; }
+        .logo-icon { width: 38px; height: 38px; margin-right: 10px; }
+        h1 { color: var(--primary); text-align: center; margin-bottom: 6px; font-weight: 800; letter-spacing: 1px; font-size: 2rem; }
+        .subtitle { text-align: center; color: var(--muted); margin-bottom: 22px; font-size: 1.06rem; font-family: 'Roboto', Arial, sans-serif; }
+        textarea { width: 100%; max-width: 100%; box-sizing: border-box; min-height: 160px; margin: 18px 0 8px 0; padding: 16px; border: 1.5px solid #b2bec3; border-radius: 14px; font-size: 1.08rem; transition: border 0.2s, box-shadow 0.2s, transform 0.1s; font-family: 'Roboto', Arial, sans-serif; background: rgba(245, 247, 255, 0.7); box-shadow: 0 1px 4px rgba(79,140,255,0.06); resize: vertical; color: var(--text); }
+        .dark textarea { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.2); }
+        textarea:focus { border: 1.5px solid var(--primary); outline: none; box-shadow: 0 0 0 2px var(--ring); transform: translateY(-1px); }
+        .counter { text-align: right; color: var(--muted); font-size: 0.9rem; margin-bottom: 18px; }
+        button { background: rgba(79,140,255,0.88); color: white; padding: 14px 0; width: 100%; border: none; border-radius: 12px; font-size: 1.14rem; font-weight: 700; cursor: pointer; box-shadow: 0 2px 12px rgba(79,140,255,0.18); transition: background 0.2s, transform 0.1s, box-shadow 0.2s; backdrop-filter: blur(2px); margin-bottom: 8px; letter-spacing: 0.5px; position: relative; overflow: hidden; }
+        button:before { content: ''; position: absolute; left: 50%; top: 50%; width: 0; height: 0; background: rgba(255,255,255,0.18); border-radius: 100%; transform: translate(-50%, -50%); transition: width 0.3s, height 0.3s; z-index: 0; }
+        button:active:before { width: 200%; height: 200%; }
+        button:hover { background: linear-gradient(90deg, var(--primary-alt) 0%, var(--primary) 100%); transform: translateY(-2px) scale(1.02); box-shadow: 0 6px 18px rgba(79,140,255,0.28); }
+        #spinner { display:none; margin-top:18px; text-align:center; }
+        .lds-ring { display: inline-block; position: relative; width: 48px; height: 48px; }
+        .lds-ring div { box-sizing: border-box; display: block; position: absolute; width: 38px; height: 38px; margin: 5px; border: 4px solid var(--primary); border-radius: 50%; animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite; border-color: var(--primary) transparent transparent transparent; }
+        .lds-ring div:nth-child(1) { animation-delay: -0.45s; }
+        .lds-ring div:nth-child(2) { animation-delay: -0.3s; }
+        .lds-ring div:nth-child(3) { animation-delay: -0.15s; }
+        @keyframes lds-ring { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .footer { margin-top: 38px; color: var(--muted); font-size: 0.98rem; text-align: center; letter-spacing: 0.2px; font-family: 'Roboto', Arial, sans-serif; opacity: 0.9; }
+        @media (max-width: 700px) { .container { padding: 24px 6vw 20px 6vw; max-width: 98vw; } h1 { font-size: 1.4rem; } }
+        .post-content { line-height: 1.7; white-space: pre-wrap; color: var(--text); font-size: 1.13rem; background: rgba(245, 247, 255, 0.7); border-radius: 14px; padding: 22px 18px; box-shadow: 0 1px 6px rgba(79,140,255,0.08); font-family: 'Roboto', Arial, sans-serif; }
+        .dark .post-content { background: rgba(255,255,255,0.06); }
+        .copy-button { background: rgba(56,182,255,0.92); color: white; padding: 13px 0; width: 100%; border: none; border-radius: 12px; font-size: 1.13rem; font-weight: 700; margin-bottom: 18px; cursor: pointer; box-shadow: 0 2px 12px rgba(79,140,255,0.18); transition: background 0.2s, transform 0.1s, box-shadow 0.2s; text-align: center; display: block; letter-spacing: 0.5px; position: relative; overflow: hidden; }
+        .copy-button:before { content: ''; position: absolute; left: 50%; top: 50%; width: 0; height: 0; background: rgba(255,255,255,0.18); border-radius: 100%; transform: translate(-50%, -50%); transition: width 0.3s, height 0.3s; z-index: 0; }
+        .copy-button:active:before { width: 200%; height: 200%; }
+        .copy-button:hover { background: linear-gradient(90deg, var(--primary) 0%, var(--primary-alt) 100%); transform: translateY(-2px) scale(1.02); box-shadow: 0 6px 18px rgba(79,140,255,0.28); }
+        .voice-row { display:flex; gap:12px; align-items:center; }
+        select { width:100%; padding:12px; border:1.5px solid #b2bec3; border-radius:12px; background: var(--card-bg); color: var(--text); }
+        select:focus { outline:none; border-color: var(--primary); box-shadow: 0 0 0 2px var(--ring); }
+        .dark select { background: rgba(16,23,35,0.6); border-color: rgba(255,255,255,0.2); color: var(--text); }
+        select option { color: #0f172a; background: #ffffff; }
+        .dark select option { color: #e5e7eb; background: #0f172a; }
+        #scrollTopBtn { position:fixed; bottom:32px; right:32px; z-index:1000; background: var(--primary); border:none; border-radius:50%; width:54px; height:54px; box-shadow:0 10px 24px rgba(37,99,235,0.35); color:white; font-size:1.4rem; cursor:pointer; align-items:center; justify-content:center; transition: transform 0.1s ease; display:none; }
+        #scrollTopBtn:hover { transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <div class="brand">
+            <svg class="logo-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="48" height="48" rx="12" fill="#2563eb"/><path d="M16 32V16H32V32H16Z" fill="#fff"/><path d="M20 20H28V28H20V20Z" fill="#2563eb"/></svg>
+            <span>BlogPro</span>
+        </div>
+        <button id="themeToggle" class="toggle">🌙</button>
+    </div>
+    <div class="container">
+        <div class="logo">
+            <svg class="logo-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="48" height="48" rx="12" fill="#2563eb"/><path d="M16 32V16H32V32H16Z" fill="#fff"/><path d="M20 20H28V28H20V20Z" fill="#2563eb"/></svg>
+            <span style="font-size:1.25rem;font-weight:700;color:#2563eb;letter-spacing:0.5px;">BlogPro</span>
+        </div>
+        <h1>Generador de Posts</h1>
+        <div class="subtitle">Convierte tu resumen en un post atractivo en segundos</div>
+        <form method="POST" id="postForm" style="width:100%;">
+            <textarea name="resumen" placeholder="Escribe aquí el resumen de tu post..."></textarea>
+            <div id="charCounter" class="counter">0 caracteres</div>
+            <button type="submit" id="submitBtn"><span style="vertical-align:middle;">🚀</span> Generar Post</button>
+            <div id="spinner" style="display:none;justify-content:center;align-items:center;margin-top:18px;">
+                <div class="lds-ring"><div></div><div></div><div></div><div></div></div>
+                <span style="color:#2563eb; margin-left:12px; font-size:1.1rem;">Generando post...</span>
+            </div>
+        </form>
+        <div id="resultContainer" style="display:none;">
+            <h1 style="color:#2563eb;text-align:center;margin-bottom:18px;font-weight:800;letter-spacing:1px;font-size:2.1rem;">Post Generado</h1>
+            <div class="post-content" id="postContent" style="margin-bottom:32px;"></div>
+            <button class="copy-button" id="copyBtn" style="display:none;"><span style="vertical-align:middle;">📋</span> Copiar texto</button>
+            <div id="ttsControls" style="display:none;">
+                <div class="voice-row">
+                    <select id="voiceSelect"></select>
+                    <button id="ttsBtn" class="copy-button" style="min-width:220px;">🎧 Generar audio</button>
+                </div>
+                <audio id="audioPlayer" controls style="width:100%; margin-top:12px; display:none;"></audio>
+                <a id="downloadAudio" class="copy-button" style="display:none; text-decoration:none; text-align:center;" download="post_audio.mp3">Descargar audio</a>
+                <div id="ttsError" style="margin-top:8px; color:#ef4444; display:none;"></div>
+            </div>
+        </div>
+    </div>
+    <div class="footer">Hecho por José MC (JosePin)</div>
+    <button id="scrollTopBtn">↑</button>
+    <script>
+        const form = document.getElementById('postForm');
+        const spinner = document.getElementById('spinner');
+        const btn = document.getElementById('submitBtn');
+        const resultContainer = document.getElementById('resultContainer');
+        const postContent = document.getElementById('postContent');
+        const copyBtn = document.getElementById('copyBtn');
+        const themeToggle = document.getElementById('themeToggle');
+        const charCounter = document.getElementById('charCounter');
+        const textarea = form.querySelector('textarea');
+        const ttsControls = document.getElementById('ttsControls');
+        const voiceSelect = document.getElementById('voiceSelect');
+        const ttsBtn = document.getElementById('ttsBtn');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const downloadAudio = document.getElementById('downloadAudio');
+        function applyTheme(t){ if(t==='dark'){ document.body.classList.add('dark'); themeToggle.textContent='☀️'; } else { document.body.classList.remove('dark'); themeToggle.textContent='🌙'; } }
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        applyTheme(savedTheme);
+        themeToggle.addEventListener('click', function(){ const next = document.body.classList.contains('dark') ? 'light' : 'dark'; localStorage.setItem('theme', next); applyTheme(next); });
+        function updateCount(){ charCounter.textContent = (textarea.value.length||0) + ' caracteres'; }
+        textarea.addEventListener('input', updateCount);
+        updateCount();
+        async function loadVoices(){
+            try {
+                const r = await fetch('/voices');
+                const j = await r.json();
+                if (j.voices && Array.isArray(j.voices) && j.voices.length) {
+                    voiceSelect.innerHTML = j.voices.map(v=>`<option value="${v.shortName}">${v.displayName} (${v.locale})</option>`).join('');
+                } else {
+                    voiceSelect.innerHTML = '<option value="es-ES-ElviraNeural">Elvira (ES)</option>';
+                }
+            } catch(e) {
+                voiceSelect.innerHTML = '<option value="es-ES-ElviraNeural">Elvira (ES)</option>';
+            }
+        }
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            spinner.style.display = 'flex';
+            btn.disabled = true;
+            btn.style.opacity = 0.6;
+            postContent.textContent = '';
+            resultContainer.style.display = 'block';
+            copyBtn.style.display = 'none';
+            const resumen = form.resumen.value.trim();
+            if (resumen) {
+                fetch('/stream_post', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'resumen=' + encodeURIComponent(resumen)
+                }).then(response => {
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    let buffer = '';
+                    function read() {
+                        reader.read().then(({ done, value }) => {
+                            if (done) {
+                                if (buffer) {
+                                    postContent.textContent += buffer;
+                                }
+                                spinner.style.display = 'none';
+                                btn.disabled = false;
+                                btn.style.opacity = 1;
+                                copyBtn.style.display = 'block';
+                                ttsControls.style.display = 'block';
+                                loadVoices();
+                                return;
+                            }
+                            buffer += decoder.decode(value, {stream:true});
+                            let lines = buffer.split(/\r?\n/);
+                            buffer = lines.pop();
+                            for (let line of lines) {
+                                postContent.textContent += line + '\n';
+                            }
+                            read();
+                        });
+                    }
+                    read();
+                });
+            } else {
+                spinner.style.display = 'none';
+                btn.disabled = false;
+                btn.style.opacity = 1;
+            }
+        });
+        copyBtn.addEventListener('click', function() {
+            const text = postContent.innerText;
+            navigator.clipboard.writeText(text).then(function() {
+                copyBtn.innerHTML = '✅ ¡Copiado!';
+                setTimeout(()=>{ copyBtn.innerHTML = '<span style="vertical-align:middle;">📋</span> Copiar texto'; }, 1500);
+            });
+        });
+        ttsBtn && ttsBtn.addEventListener('click', async function() {
+            ttsBtn.disabled = true;
+            ttsBtn.textContent = 'Generando...';
+            try {
+                const resp = await fetch('/tts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'text=' + encodeURIComponent(postContent.innerText) + '&voice=' + encodeURIComponent(voiceSelect.value)
+                });
+                if (!resp.ok) {
+                    const msg = await resp.text();
+                    throw new Error(msg || 'Error al generar audio');
+                }
+                const cd = resp.headers.get('Content-Disposition');
+                let filename = 'post_audio.mp3';
+                if (cd) {
+                    const m = cd.match(/filename=([^;]+)/i);
+                    if (m) { filename = m[1].replace(/"/g,''); }
+                }
+                const blob = await resp.blob();
+                const url = URL.createObjectURL(blob);
+                audioPlayer.src = url;
+                audioPlayer.style.display = 'block';
+                downloadAudio.href = url;
+                downloadAudio.download = filename;
+                downloadAudio.style.display = 'block';
+                ttsError.style.display = 'none';
+                ttsBtn.textContent = '🎧 Generar audio';
+            } catch (e) {
+                const msg = (e && e.message ? e.message : 'reintenta');
+                ttsBtn.textContent = 'Error: ' + msg;
+                if (msg.includes('403')) {
+                    ttsError.textContent = 'El servicio rechazó la solicitud (403). Prueba otra voz o reintenta en unos minutos.';
+                } else if (msg.includes('No se pudo sintetizar con voces disponibles')) {
+                    ttsError.textContent = 'Edge no pudo sintetizar con las voces actuales. Cambia de voz y reintenta.';
+                } else {
+                    ttsError.textContent = msg;
+                }
+                ttsError.style.display = 'block';
+                setTimeout(()=>{ ttsBtn.textContent = '🎧 Generar audio'; }, 1500);
+            } finally {
+                ttsBtn.disabled = false;
+            }
+        });
+        // Flecha para subir arriba
+        const scrollTopBtn = document.getElementById('scrollTopBtn');
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 200) {
+                scrollTopBtn.style.display = 'flex';
+            } else {
+                scrollTopBtn.style.display = 'none';
+            }
+        });
+        scrollTopBtn.addEventListener('click', function() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    </script>
+</body>
+</html>
