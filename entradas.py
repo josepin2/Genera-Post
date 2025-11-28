@@ -41,6 +41,13 @@ def limpiar_spinner(texto: str) -> str:
     spinner_chars = '⠙⠸⠴⠧⠏⠹⠼⠦⠇⠋'
     return ''.join(c for c in texto if c not in spinner_chars)
 
+def limpiar_modelo_tokens(texto: str) -> str:
+    # Eliminar tokens especiales del modelo
+    tokens = ['<end_of_turn>', '<start_of_turn>', '<eos>', '<bos>']
+    for token in tokens:
+        texto = texto.replace(token, '')
+    return texto
+
 def generar_post(resumen_usuario: str, callback=None) -> str:
     prompt = (
         f"Por favor, escribe un post divertido, cercano y extenso para un blog dirigido a gente joven. "
@@ -62,6 +69,7 @@ def generar_post(resumen_usuario: str, callback=None) -> str:
         for linea in proceso.stdout:
             limpia = limpiar_ansi(linea)
             limpia = limpiar_spinner(limpia)
+            limpia = limpiar_modelo_tokens(limpia)
             if callback:
                 callback(limpia)
             salida.append(limpia)
@@ -143,6 +151,7 @@ def generar_post_stream(resumen_usuario: str):
     for linea in proceso.stdout:
         limpia = limpiar_ansi(linea)
         limpia = limpiar_spinner(limpia)
+        limpia = limpiar_modelo_tokens(limpia)
         yield limpia
     proceso.wait()
 
@@ -340,6 +349,8 @@ def sintetizar_audio_fallback(texto: str, voz: str) -> tuple:
     raise RuntimeError('No se pudo sintetizar con voces disponibles')
 
 def limpiar_markdown(texto: str) -> str:
+    # Primero limpiar tokens del modelo
+    texto = limpiar_modelo_tokens(texto)
     # Eliminar encabezados Markdown (## Titulo)
     texto = re.sub(r'#+\s*', '', texto)
     # Eliminar negritas y cursivas (**texto**, *texto*)
